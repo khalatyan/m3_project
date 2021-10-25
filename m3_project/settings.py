@@ -127,4 +127,7 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-from m3_project.local_settings import *
+try:
+    from m3_project.local_settings import *
+except:
+    pass
