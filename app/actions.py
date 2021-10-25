@@ -1,52 +1,34 @@
-from django.contrib.auth.models import Group, User, Permission
-from django.contrib.contenttypes.models import ContentType
-
 from objectpack.actions import ObjectPack
-from objectpack.observer import Observer
 from objectpack.ui import ModelEditWindow
 
-import app.ui
+from django.contrib.contenttypes.models import ContentType
+from django.contrib.auth.models import Group
+from django.contrib.auth.models import Permission
+from django.contrib.auth.models import User
 
-
-class UserPack(ObjectPack):
-
-    model = User
-    add_window = edit_window = app.ui.UserEditWindow
-    add_to_desktop = True
-
+from app.ui import UserEditWindow
 
 class ContentTypePack(ObjectPack):
-
     model = ContentType
-    observer = Observer()
-    add_window = edit_window = ModelEditWindow.fabricate(
-        model = model,
-        field_list=['code', 'app_label'],
-        model_register=observer,
-    )
     add_to_desktop = True
-
+    edit_window = add_window = ModelEditWindow.fabricate(model)
 
 class GroupPack(ObjectPack):
-
-    observer = Observer()
     model = Group
-    add_window = edit_window = ModelEditWindow.fabricate(
-        model=model,
-        field_list=['code', 'name', 'permissions'],
-        model_register=observer,
-    )
-
     add_to_desktop = True
-
+    edit_window = add_window = ModelEditWindow.fabricate(model)
 
 class PermissionPack(ObjectPack):
-
-    observer = Observer()
     model = Permission
-    add_window = edit_window = ModelEditWindow.fabricate(
-        model=model,
-        field_list=['code', 'name', 'content_type'],
-        model_register=observer,
-    )
     add_to_desktop = True
+
+    def __init__(self, content_type_pack=None):
+        self.edit_window = self.add_window = ModelEditWindow.fabricate(self.model, model_register={
+            'ContentType': content_type_pack or ContentTypePack()
+        })
+        super().__init__()
+
+class UserPack(ObjectPack):
+    model = User
+    add_to_desktop = True
+    edit_window = add_window = UserEditWindow
